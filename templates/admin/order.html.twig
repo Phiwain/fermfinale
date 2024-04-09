@@ -1,0 +1,54 @@
+{% extends '@!EasyAdmin/layout.html.twig' %}
+
+{% block main %}
+    <h3> Commande n°{{ order.id }}</h3><br/>
+    {{ include('admin/state.html.twig', { field : {'value' :order.state }})}}
+    <br/>
+    <br/>
+    <span>Passée le : {{ order.createdAt|date('d/m/Y') }}</span><br/>
+
+
+
+
+    <div class="row my-4">
+        <div class="col-md-6">
+            <strong>Adresse de livraison</strong><br/>
+            {{ order.delivery|raw }}
+        </div>
+        <div class="col-md-6">
+            <strong>Point de livraison</strong><br/>
+            {{ order.carrierName }}
+        </div>
+    </div>
+
+    <strong>Contenu de la commande</strong><br/>
+
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Illustration</th>
+                <th scope="col">Nom du produit</th>
+                <th scope="col">Quantité</th>
+                <th scope="col">Prix Total</th>
+            </tr>
+            </thead>
+            <tbody>
+    {% for product in order.orderDetails %}
+            <tr>
+                <td><img src="/uploads/{{ product.illustration }}" width="100px">/td>
+                <td>{{ product.productName }}</td>
+                <td>{{ product.productPrice }}</td>
+                <td>{{ product.productPrice|price }}</td>
+            </tr>
+    {% endfor %}
+            </tbody>
+        </table>
+
+    <div class="text-right fs-5">
+        <strong>Total de la commande</strong> {{ order.total|price }}
+    </div>
+
+
+
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+    <div class="container my-5">
+        <h1>Récapitulatif de ma commande</h1>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="bg-light p-3">
+                    <strong>Contenu de votre panier:</strong> <br/>
+                    {% for product in cart %}
+                        <div class="row mt-2">
+                            <div class="col-md-2">
+                                <img src="/uploads/{{ product.object.illustration }}" alt="{{ product.object.name }}">
+                            </div>
+                            <div class="col-md-6">
+                                <strong>{{ product.object.name }}</strong>
+                                <span class="d-block small">Prix au Kg{{ product.object.price }}</span>
+                            </div>
+                            <div class="col-md-2 text-right">
+                                <span class="badge text-bg-secondary">x {{ product.object.qty }}</span>
+                            </div>
+                            <div class="col-md-2">
+                                <strong>{{ (product.qty * product.object.price) }}</strong>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="bg-light p-3 my-3">
+                    <strong>Votre adresse:</strong>  <br/>
+                    {{ choices.addresses.prenom }} {{ choices.addresses.nom }} <br/>
+                    {{ choices.addresses.address }} <br/>
+                    {{ choices.addresses.postal }} - {{ choices.addresses.city }}
+                </div>
+                <hr>
+                <div class="bg-light p-3">
+                    <strong>Votre point de livraison:</strong> <br/>
+                    {{ choices.carriers.name }} <br/>
+                    {{ choices.carriers.address }}
+                </div>
+
+            </div>
+            <div class="col-md-4">
+                <div class="bg-light p-3">
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <span class="fw-bold">  Prix commande :</span>
+                        <span> {{ total|price }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ path('app_order') }}" class="btn btn-success w-100 mt-3">Payer</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}

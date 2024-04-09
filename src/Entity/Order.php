@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\OrderRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -23,6 +25,32 @@ class Order
 
     #[ORM\Column(length: 255)]
     private ?string $delivery = null;
+
+    #[ORM\OneToMany(targetEntity: OrderDetail::class, mappedBy: 'myOrder', cascade: ['persist'])]
+    private Collection $orderDetails;
+
+    #[ORM\Column(length: 255)]
+    private ?string $state = null;
+
+    #[ORM\ManyToOne(inversedBy: 'orders')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $User = null;
+
+    public function __construct()
+    {
+        $this->orderDetails = new ArrayCollection();
+    }
+
+    public function getTotal()
+    {
+        $products = $this->getOrderDetails();
+        foreach ( $products as $product){
+            $total=$product->setProductPrice() * $product->setProductQuantity();
+        }
+
+
+        return $total;
+    }
 
     public function getId(): ?int
     {
@@ -61,6 +89,60 @@ class Order
     public function setDelivery(string $delivery): static
     {
         $this->delivery = $delivery;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, OrderDetail>
+     */
+    public function getOrderDetails(): Collection
+    {
+        return $this->orderDetails;
+    }
+
+    public function addOrderDetail(OrderDetail $orderDetail): static
+    {
+        if (!$this->orderDetails->contains($orderDetail)) {
+            $this->orderDetails->add($orderDetail);
+            $orderDetail->setMyOrder($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrderDetail(OrderDetail $orderDetail): static
+    {
+        if ($this->orderDetails->removeElement($orderDetail)) {
+            // set the owning side to null (unless already changed)
+            if ($orderDetail->getMyOrder() === $this) {
+                $orderDetail->setMyOrder(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getState(): ?string
+    {
+        return $this->state;
+    }
+
+    public function setState(string $state): static
+    {
+        $this->state = $state;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->User;
+    }
+
+    public function setUser(?User $User): static
+    {
+        $this->User = $User;
 
         return $this;
     }

@@ -1,20 +1,76 @@
-{% extends 'base.html.twig' %}
+{# {% extends 'base.html.twig' %}
 
-{% block title %}Hello ProductController!{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+    <div class="container my-5">
+        <div class="row">
+            {% for product in products %}
+            <div class="col-md-3">
+                <div class="container text-center">
+                    <img src="/uploads/{{ product.illustration }}" class="img-fluid" alt="{{ product.name }}" width="200px" height="200px" ><br/>
+                    <small><i><a href="{{ path('app_category', {slug:product.category.slug}) }}">{{ product.category.name }}</a> > {{ product.name }}</i></small>
+                    <h1> {{ product.name }}</h1>
+                    {{ product.description|raw }}
+                    <span class="d-block mb-3">{{ product.price }} €/Kg</span>
+                    <a href="{{ path('app_cart_add', {id:product..object.id}) }}">+</a>
+                    <a href="{{ path('app_cart_add', {id:product.id}) }}" class="btn btn-success mt-3">Ajouter au panier</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/MAMP/Fermedelafougere/src/Controller/ProductController.php</code></li>
-        <li>Your template at <code>C:/MAMP/Fermedelafougere/templates/product/index.html.twig</code></li>
-    </ul>
-</div>
+
+    </div>
+{% endblock %}
+#}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container my-5">
+        <div class="row">
+            {% for product in products %}
+                <div class="col-md-3">
+                    <div class="container text-center">
+                        <img src="/uploads/{{ product.illustration }}" class="img-fluid" alt="{{ product.name }}" width="200px" height="200px" ><br/>
+                        <small><i><a href="{{ path('app_category', {slug:product.category.slug}) }}">{{ product.category.name }}</a> > {{ product.name }}</i></small>
+                        <h1>{{ product.name }}</h1>
+                        {{ product.description|raw }}<br/>
+                        <span class="d-block mb-3">{{ product.price }} €/Kg</span>
+                        <form action="{{ path('app_cart_add', {id: product.id}) }}" method="post" id="add-to-cart-form-{{ product.id }}">
+                            <div class="form-group text-center">
+                                <label for="quantity">Quantité :</label>
+                                <select name="quantity" id="quantity-{{ product.id }}" class="form-control w-50 text-center mx-auto">
+                                    {% for quantity in product.getQuantity() %}
+                                        <option value="{{ quantity }}">{{ quantity }} Kg</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <input type="hidden" name="selected_quantity" id="selected_quantity-{{ product.id }}" value="">
+                            <button type="submit" class="btn btn-success mt-3">Ajouter au panier</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cibler tous les formulaires d'ajout au panier
+            const addToCartForms = document.querySelectorAll('form[id^="add-to-cart-form-"]');
+
+            // Boucler à travers chaque formulaire et ajouter un écouteur d'événements de changement à chaque champ de quantité
+            addToCartForms.forEach(form => {
+                const productId = form.id.split('-').pop(); // Récupérer l'identifiant du produit
+                const quantityInput = document.getElementById(`quantity-${productId}`); // Champ de quantité
+                const selectedQuantityInput = document.getElementById(`selected_quantity-${productId}`); // Champ de quantité sélectionnée
+
+                quantityInput.addEventListener('change', function() {
+                    // Mettre à jour la valeur du champ de quantité sélectionnée
+                    selectedQuantityInput.value = this.value;
+                });
+            });
+        });
+    </script>
 {% endblock %}
