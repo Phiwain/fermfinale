@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Carrier;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
@@ -15,14 +16,19 @@ class CarrierCrudController extends AbstractCrudController
         return Carrier::class;
     }
 
-    /*
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setEntityLabelInSingular('Point de Livraisons')
+            ->setEntityLabelInPlural('Points de Livraison');
+    }
+
     public function configureFields(string $pageName): iterable
     {
         return [
-            IdField::new('id'),
-            TextField::new('title'),
-            TextEditorField::new('description'),
+            TextField::new('Name')->setLabel("Nom du point de livraison"),
+            TextEditorField::new('Address')->setLabel("Adresse du point de livraison"),
         ];
     }
-    */
+
 }
