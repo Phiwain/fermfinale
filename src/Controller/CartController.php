@@ -37,6 +37,7 @@ class CartController extends AbstractController
 
         // Récupérer la quantité sélectionnée depuis la demande
         $selectedQuantity = $request->request->get('selected_quantity');
+
         // Vérifier si la quantité est valide
         if (!is_numeric($selectedQuantity) || $selectedQuantity <= 0) {
             $this->addFlash('error', "Quantité invalide.");
@@ -48,7 +49,7 @@ class CartController extends AbstractController
 
         // Ajouter le produit avec la quantité sélectionnée au panier
         $cart->add($product, $selectedQuantity);
-
+        dd($cart->getCart());
         // Message de succès
         $this->addFlash('success', "Produit correctement ajouté à votre panier");
 
