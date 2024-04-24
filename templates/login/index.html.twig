@@ -2,7 +2,7 @@
 
 
 {% block body %}
-    <div class="container my-5">
+    <div class="container my-5 text-center w-50">
         <h1>Connexion</h1>
         {% if error %}
             <div>{{ error.messageKey|trans(error.messageData, 'security') }}</div>
@@ -21,6 +21,6 @@
 
         <br/>
         Vous n'avez pas de compte?  -  <a href="{{ path('app_register') }}">Inscrivez vous</a>
-
     </div>
+
 {% endblock %}

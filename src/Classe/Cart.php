@@ -3,6 +3,7 @@
 namespace App\Classe;
 
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class Cart
 {
@@ -11,28 +12,27 @@ class Cart
 
     }
 
-    public function add($product, $quantity)
+    public function add(array $product, $quantity)
     {
-        $cart = $this->requestStack->getSession()->get('cart');
+        $cart = $this->requestStack->getSession()->get('cart', []);
 
-        // Convertir la quantité en un entier
-        $quantity = intval($quantity);
+        $quantity = floatval($quantity);
 
-        // Vérifier si le produit est déjà dans le panier
-        if (isset($cart[$product->getId()])) {
-            // Si oui, mettre à jour la quantité existante
-            $cart[$product->getId()]['qty'] += $quantity;
+        $productId = $product['id'];
+        if (isset($cart[$productId])) {
+            $cart[$productId]['qty'] += $quantity;
         } else {
-            // Sinon, ajouter un nouveau produit au panier
-            $cart[$product->getId()] = [
-                'object' => $product,
+            $cart[$productId] = [
+                'id' => $product['id'],
+                'name' => $product['name'],
+                'illustration' => $product['illustration'],
+                'price' => $product['price'],
                 'qty' => $quantity
             ];
         }
 
         $this->requestStack->getSession()->set('cart', $cart);
     }
-
 
 
     public function decrease($id)
@@ -46,17 +46,21 @@ class Cart
         }
         $this->requestStack->getSession()->set('cart', $cart );
     }
-    public  function fullQuantity(){
-        $cart=$this->requestStack->getSession()->get('cart');
+    public function fullQuantity()
+    {
+        $cart = $this->requestStack->getSession()->get('cart');
         $quantity = 0;
 
-        if(!isset($cart)){
+        if (!isset($cart)) {
             return $quantity;
         }
 
         foreach ($cart as $product) {
-            $quantity = $quantity + intval($product['qty']);
+            if (is_array($product) && array_key_exists('qty', $product)) {
+                $quantity += floatval($product['qty']);
+            }
         }
+
         return $quantity;
     }
 
@@ -70,8 +74,8 @@ class Cart
         }
 
         foreach ($cart as $product) {
-            $qty = intval($product['qty']); // Conversion en entier
-            $price = $price + ($product['object']->getPrice() * $qty);
+            $qty = floatval($product['qty']); // Conversion en entier
+            $price = $price + ($product['price'] * $qty);
         }
         return $price;
     }
@@ -79,7 +83,7 @@ class Cart
     {
        return $this->requestStack->getSession()->remove('cart');
     }
-    public function getCart(){
-        return $this->requestStack->getSession()->get('cart');
+    public function getCart(SessionInterface $session){
+        return  $session->get('cart', []);
     }
 }
