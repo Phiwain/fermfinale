@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use function Webmozart\Assert\Tests\StaticAnalysis\null;
 
@@ -37,29 +38,25 @@ class OrderController extends AbstractController
     }
 
     #[Route('/commande/recapitulatif', name: 'app_order_summary')]
-    public function add(Request $request, Cart $cart, EntityManagerInterface $entityManager): Response
+    public function add(Request $request, Cart $cart,SessionInterface $session, EntityManagerInterface $entityManager): Response
     {
-
-        if($request->getMethod() != 'POST'){
+        if ($request->getMethod() != 'POST') {
             return $this->redirectToRoute('app_cart');
         }
-        $products = $cart->getCart();
+        $products = $cart->getCart($session);
 
         $form = $this->createForm(OrderType::class, null, [
-            'addresses'=>$this->getUser()->getAddresses(),
+            'addresses' => $this->getUser()->getAddresses(),
         ]);
 
         $form->handleRequest($request);
 
-        if($form->isSubmitted() && $form->isValid()){
-
+        if ($form->isSubmitted() && $form->isValid()) {
             $addressObj = $form->get('addresses')->getData();
-            $address =$addressObj->getPrenom().' '.$addressObj->getnom().'<br/>';
-            $address .= $addressObj->getAddress().'<br/>';
-            $address .= $addressObj->getPostal().' '.$addressObj->getCity().'<br/>';
+            $address = $addressObj->getPrenom() . ' ' . $addressObj->getNom() . '<br/>';
+            $address .= $addressObj->getAddress() . '<br/>';
+            $address .= $addressObj->getPostal() . ' ' . $addressObj->getCity() . '<br/>';
             $address .= $addressObj->getPhone();
-
-
 
             $order = new Order();
             $order->setUser($this->getUser());
@@ -68,23 +65,26 @@ class OrderController extends AbstractController
             $order->setCarrierName($form->get('carriers')->getData()->getName());
             $order->setDelivery($address);
 
-            foreach ($products as $product){
+            foreach ($products as $product) {
                 $orderDetail = new OrderDetail();
-                $orderDetail->setProductName($product['object']->getName());
-                $orderDetail->setProductIllustration($product['object']->getIllustration());
-                $orderDetail->setProductPrice($product['object']->getPrice());
+                $orderDetail->setProductName($product['name']);
+                $orderDetail->setProductIllustration($product['illustration']);
+                $orderDetail->setProductPrice($product['price']);
                 $orderDetail->setProductQuantity($product['qty']);
+                $entityManager->persist($orderDetail);
                 $order->addOrderDetail($orderDetail);
             }
-        $entityManager->persist($order);
-            $entityManager->flush();
 
+            $entityManager->persist($order);
+            $entityManager->flush();
         }
 
         return $this->render('order/summary.html.twig', [
-            'choices'=>$form->getData(),
-            'cart'=>$products,
-            'total'=>$cart->getTotal()
+            'choices' => $form->getData(),
+            'cart' => $products,
+            'total' => $cart->getTotal()
         ]);
     }
+
+
 }

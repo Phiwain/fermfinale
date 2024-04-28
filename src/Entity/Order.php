@@ -43,9 +43,10 @@ class Order
 
     public function getTotal()
     {
+        $total = 0;
         $products = $this->getOrderDetails();
         foreach ( $products as $product){
-            $total=$product->setProductPrice() * $product->setProductQuantity();
+            $total+=$product->getProductPrice() * $product->getProductQuantity();
         }
 
 

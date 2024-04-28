@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20240403210243 extends AbstractMigration
+final class Version20240424210638 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -28,6 +28,8 @@ final class Version20240403210243 extends AbstractMigration
         $this->addSql('CREATE TABLE product (id INT AUTO_INCREMENT NOT NULL, category_id INT DEFAULT NULL, name VARCHAR(255) NOT NULL, slug VARCHAR(255) NOT NULL, description LONGTEXT NOT NULL, illustration VARCHAR(255) NOT NULL, price DOUBLE PRECISION NOT NULL, INDEX IDX_D34A04AD12469DE2 (category_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE product_quantity (product_id INT NOT NULL, quantity_id INT NOT NULL, INDEX IDX_54437CA14584665A (product_id), INDEX IDX_54437CA17E8B4AFC (quantity_id), PRIMARY KEY(product_id, quantity_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE quantity (id INT AUTO_INCREMENT NOT NULL, name DOUBLE PRECISION NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE recipes (id INT AUTO_INCREMENT NOT NULL, relation_id INT DEFAULT NULL, name VARCHAR(255) NOT NULL, illustration VARCHAR(255) NOT NULL, recipes LONGTEXT NOT NULL, INDEX IDX_A369E2B53256915B (relation_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE recipes_type (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, slug VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE `user` (id INT AUTO_INCREMENT NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL, prenom VARCHAR(255) NOT NULL, UNIQUE INDEX UNIQ_IDENTIFIER_EMAIL (email), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE messenger_messages (id BIGINT AUTO_INCREMENT NOT NULL, body LONGTEXT NOT NULL, headers LONGTEXT NOT NULL, queue_name VARCHAR(190) NOT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', available_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', delivered_at DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_75EA56E0FB7336F0 (queue_name), INDEX IDX_75EA56E0E3BD61CE (available_at), INDEX IDX_75EA56E016BA31DB (delivered_at), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('ALTER TABLE address ADD CONSTRAINT FK_D4E6F81A76ED395 FOREIGN KEY (user_id) REFERENCES `user` (id)');
@@ -36,6 +38,12 @@ final class Version20240403210243 extends AbstractMigration
         $this->addSql('ALTER TABLE product ADD CONSTRAINT FK_D34A04AD12469DE2 FOREIGN KEY (category_id) REFERENCES category (id)');
         $this->addSql('ALTER TABLE product_quantity ADD CONSTRAINT FK_54437CA14584665A FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE product_quantity ADD CONSTRAINT FK_54437CA17E8B4AFC FOREIGN KEY (quantity_id) REFERENCES quantity (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE recipes ADD CONSTRAINT FK_A369E2B53256915B FOREIGN KEY (relation_id) REFERENCES recipes_type (id)');
+
+        $hashedPassword = password_hash('123456', PASSWORD_BCRYPT);
+
+        // Insert a new Employee record with the hashed password
+        $this->addSql("INSERT INTO user (email, roles, password, name, prenom) VALUES ('vrondot@gmail.com', '[\"ROLE_ADMIN\"]', '$hashedPassword', 'RONDOT', 'Valentin')");
     }
 
     public function down(Schema $schema): void
@@ -47,6 +55,7 @@ final class Version20240403210243 extends AbstractMigration
         $this->addSql('ALTER TABLE product DROP FOREIGN KEY FK_D34A04AD12469DE2');
         $this->addSql('ALTER TABLE product_quantity DROP FOREIGN KEY FK_54437CA14584665A');
         $this->addSql('ALTER TABLE product_quantity DROP FOREIGN KEY FK_54437CA17E8B4AFC');
+        $this->addSql('ALTER TABLE recipes DROP FOREIGN KEY FK_A369E2B53256915B');
         $this->addSql('DROP TABLE address');
         $this->addSql('DROP TABLE carrier');
         $this->addSql('DROP TABLE category');
@@ -55,6 +64,8 @@ final class Version20240403210243 extends AbstractMigration
         $this->addSql('DROP TABLE product');
         $this->addSql('DROP TABLE product_quantity');
         $this->addSql('DROP TABLE quantity');
+        $this->addSql('DROP TABLE recipes');
+        $this->addSql('DROP TABLE recipes_type');
         $this->addSql('DROP TABLE `user`');
         $this->addSql('DROP TABLE messenger_messages');
     }

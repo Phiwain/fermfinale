@@ -13,6 +13,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\HttpFoundation\Request;
 
 class OrderCrudController extends AbstractCrudController
 {
@@ -39,12 +41,14 @@ class OrderCrudController extends AbstractCrudController
             ->remove(Crud::PAGE_INDEX, Action::EDIT);
     }
 
-    public function show(AdminContext $context)
+    public function show(AdminContext $context, AdminUrlGenerator $adminUrlGenerator, Request $request)
     {
         $order = $context->getEntity()->getInstance();
+        $url = $adminUrlGenerator->setController(self::class)->setAction('show')->setEntityId($order->getId())->generateUrl();
 
         return $this->render('admin/order.html.twig',[
-            'order'=> $order
+            'order'=> $order,
+            'current_url' => $url
         ]);
     }
     public function configureFields(string $pageName): iterable
@@ -53,9 +57,9 @@ class OrderCrudController extends AbstractCrudController
             IdField::new('id'),
             DateField::new('createdAt')->setLabel('Date'),
             NumberField::new('state')->setLabel('Statut')->setTemplatePath('admin/state.html.twig'),
-            AssociationField::new('user')->setLabel('Client'),
+            AssociationField::new('User')->setLabel('Client'),
             TextField::new('carrierName')->setLabel('transporteur'),
-            NumberField::new('total')->setLabel('Total')
+            NumberField::new('total')->setLabel('Total en €')
         ];
     }
 

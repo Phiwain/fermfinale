@@ -1,0 +1,136 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <div class="container-fluid my-3 text-center  px-lg-5">
+        <div>
+            <h2 class="p-2 mb-5">Les recettes de Valentin</h2>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <h3 class="mt-5">Filtres</h3>
+                    <form>
+                        <h5>Mots-clé</h5>
+                        <div class="form-group mb-3">
+                            <input type="text" class="form-control" id="keywords" placeholder="Entrez vos mots-clés">
+                        </div>
+                        <h5>Type de repas</h5>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="entree" id="Entrée">
+                            <label class="form-check-label" for="Entrée">
+                                Entrée
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="plat" id="Plat">
+                            <label class="form-check-label" for="Plat">
+                                Plat
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="dessert" id="Dessert">
+                            <label class="form-check-label" for="Dessert">
+                                Dessert
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary my-3">Filtrer</button>
+                    </form>
+
+                </div>
+
+                <div class="col-md-9">
+                    <div class="row">
+                        {% set recipesPerPage = 4 %}
+                        {% set pageCount = (recipes|length / recipesPerPage)|round(0, 'ceil') %}
+                        {% set currentPage = app.request.query.get('page', 1) %}
+                        {% set offset = (currentPage - 1) * recipesPerPage %}
+
+                        {% for recipe in recipes|slice(offset, recipesPerPage) %}
+                            <div>
+                                <div class="container-fluid recipe" data-name="{{ recipe.name }}" data-relation="{{ recipe.relation }}">
+                                    <h4 class="mb-4">{{ recipe.name }}</h4>
+                                    <p class="small">Type de repas: {{ recipe.relation }}</p>
+                                    <img src="/uploads/recipes/{{ recipe.illustration }}" class="img-fluid" alt="" width="300">
+                                    <p>{{ recipe.recipes|raw }}</p>
+                                </div>
+                            </div>
+                            <div class="container-fluid my-5" id="no-recipes-message" style="display: none;">Aucune recette correspondant aux critères de filtrage.</div>
+                        {% endfor %}
+
+                        {% if pageCount > 1 %}
+                            <nav aria-label="Page navigation example">
+                                <ul class="pagination justify-content-center mt-3">
+                                    {% for page in 1..pageCount %}
+                                        <li class="page-item {% if page == currentPage %}active{% endif %}">
+                                            <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Sélection du formulaire
+            var form = document.querySelector('form');
+
+            // Sélection des recettes
+            var recipes = document.querySelectorAll('.recipe');
+
+            // Sélection du conteneur des recettes
+            var recipeContainer = document.getElementById('recipe-container');
+
+            // Écoute de l'événement de soumission du formulaire
+            form.addEventListener('submit', function(event) {
+                // Empêcher le comportement par défaut du formulaire (rechargement de la page)
+                event.preventDefault();
+
+                // Récupération de la valeur du champ mots-clés
+                var keywords = document.getElementById('keywords').value.toLowerCase();
+
+                // Récupération des types de repas sélectionnés
+                var selectedTypes = [];
+                var checkboxes = document.querySelectorAll('input[type=checkbox]:checked');
+                checkboxes.forEach(function(checkbox) {
+                    selectedTypes.push(checkbox.value.toLowerCase());
+                });
+
+                // Nombre de recettes affichées
+                var recipesDisplayed = 0;
+
+                // Parcourir toutes les recettes
+                recipes.forEach(function(recipe) {
+                    // Récupérer les mots-clés et types de repas de la recette
+                    var recipeName = recipe.dataset.name.toLowerCase();
+                    var recipeRelation = recipe.dataset.relation;
+
+                    // Vérifier si la recette correspond aux critères de filtrage
+                    var keywordMatch = recipeName.includes(keywords);
+                    var typeMatch = selectedTypes.length === 0 || selectedTypes.includes(recipeRelation.toLowerCase());
+
+                    // Afficher ou masquer la recette en fonction du filtrage
+                    if (keywordMatch && typeMatch) {
+                        recipe.style.display = 'block'; // Afficher la recette
+                        recipesDisplayed++; // Incrémenter le nombre de recettes affichées
+                    } else {
+                        recipe.style.display = 'none'; // Masquer la recette
+                    }
+                });
+
+                // Afficher le message si aucune recette n'est affichée
+                if (recipesDisplayed === 0) {
+                    document.getElementById('no-recipes-message').style.display = 'block';
+                } else {
+                    document.getElementById('no-recipes-message').style.display = 'none';
+                }
+            });
+        });
+    </script>
+
+
+
+{% endblock %}

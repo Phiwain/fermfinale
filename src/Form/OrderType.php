@@ -21,8 +21,8 @@ class OrderType extends AbstractType
                 'label'=> "Choississez votre adresse de livraion",
                 'required'=> true,
                 'class'=>Address::class,
-                'extended'=> true,
                 'choices'=>$options['addresses'],
+                'expanded' => true,
                 'label_html'=>true
             ])
 
@@ -30,13 +30,13 @@ class OrderType extends AbstractType
             'label'=> "Choississez votre point de livraison",
             'required'=> true,
             'class'=>Carrier::class,
-            'extended'=> true,
+                'expanded' => true,
             'label_html'=>true
     ])
             ->add('submit', SubmitType::class, [
                 'label'=> "Valider",
                 'attr'=> [
-                    'class' => "w-100 btn btn-succes "
+                    'class' => "w-100 btn btn-light  "
                 ]
             ])
 

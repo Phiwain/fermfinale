@@ -86,7 +86,7 @@ class OrderDetail
         return $this->productPrice;
     }
 
-    public function setProductPrice(float $productPrice): static
+    public function setProductPrice($productPrice): static
     {
         $this->productPrice = $productPrice;
 

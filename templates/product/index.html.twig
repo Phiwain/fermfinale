@@ -1,73 +1,134 @@
-{# {% extends 'base.html.twig' %}
-
-
-{% block body %}
-
-    <div class="container my-5">
-        <div class="row">
-            {% for product in products %}
-            <div class="col-md-3">
-                <div class="container text-center">
-                    <img src="/uploads/{{ product.illustration }}" class="img-fluid" alt="{{ product.name }}" width="200px" height="200px" ><br/>
-                    <small><i><a href="{{ path('app_category', {slug:product.category.slug}) }}">{{ product.category.name }}</a> > {{ product.name }}</i></small>
-                    <h1> {{ product.name }}</h1>
-                    {{ product.description|raw }}
-                    <span class="d-block mb-3">{{ product.price }} €/Kg</span>
-                    <a href="{{ path('app_cart_add', {id:product..object.id}) }}">+</a>
-                    <a href="{{ path('app_cart_add', {id:product.id}) }}" class="btn btn-success mt-3">Ajouter au panier</a>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
-
-    </div>
-{% endblock %}
-#}
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <div class="container my-5">
-        <div class="row">
-            {% for product in products %}
-                <div class="col-md-3">
-                    <div class="container text-center">
-                        <img src="/uploads/{{ product.illustration }}" class="img-fluid" alt="{{ product.name }}" width="200px" height="200px" ><br/>
-                        <small><i><a href="{{ path('app_category', {slug:product.category.slug}) }}">{{ product.category.name }}</a> > {{ product.name }}</i></small>
-                        <h1>{{ product.name }}</h1>
-                        {{ product.description|raw }}<br/>
-                        <span class="d-block mb-3">{{ product.price }} €/Kg</span>
-                        <form action="{{ path('app_cart_add', {id: product.id}) }}" method="post" id="add-to-cart-form-{{ product.id }}">
-                            <div class="form-group text-center">
-                                <label for="quantity">Quantité :</label>
-                                <select name="quantity" id="quantity-{{ product.id }}" class="form-control w-50 text-center mx-auto">
-                                    {% for quantity in product.getQuantity() %}
-                                        <option value="{{ quantity }}">{{ quantity }} Kg</option>
-                                    {% endfor %}
-                                </select>
+    <div class="container-fluid my-3 text-center  px-lg-5">
+        <div>
+            <h2 class="p-2 mb-5">Les productions de Valentin</h2>
+
+            <div class="row">
+                <div class="col-md-2">
+                    <h3 class="mt-5">Filtres</h3>
+                    <form>
+                        <h5>Mots-clé</h5>
+                        <div class="form-group mb-3">
+                            <input type="text" class="form-control" id="keywords" placeholder="Entrez vos mots-clés">
+                        </div>
+                        <h5>Type de produits</h5>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="entree" id="Légumes">
+                            <label class="form-check-label" for="Légumes">
+                                Légumes
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="plat" id="Fruits">
+                            <label class="form-check-label" for="Fruits">
+                                Fruits
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="dessert" id="Autres">
+                            <label class="form-check-label" for="Autres">
+                                Autres
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary my-3">Filtrer</button>
+                    </form>
+
+                </div>
+
+                <div class="col-md-10">
+
+                    <div class="row">
+                        {% for product in products %}
+                            <div class="col-md-2" data-name="{{ product.name }}" data-category="{{ product.category.name }}">
+                                <div class="container text-center">
+                                    <img src="/uploads/{{ product.illustration }}" class="img-fluid" alt="{{ product.name }}" width="120px"><br/>
+                                    <small><i><a href="{{ path('app_category', {slug:product.category.slug}) }}">{{ product.category.name }}</a> > {{ product.name }}</i></small>
+                                    <h4>{{ product.name }}</h4>
+                                   <p>{{ product.description|raw }}</p>
+                                    <span class="d-block mb-3">{{ product.price }} €/Kg</span>
+                                    <form action="{{ path('app_cart_add', {id: product.id}) }}" method="post" id="add-to-cart-form-{{ product.id }}">
+                                        <input type="hidden" name="id" value="{{ product.id }}">
+                                        <div class="form-group text-center">
+                                            <label for="quantity">Quantité :</label>
+                                            <select name="quantity" id="quantity-{{ product.id }}" class="form-control w-50 text-center mx-auto ">
+                                                {% for quantity in product.getQuantity() %}
+                                                    <option value="{{ quantity }}">{{ quantity }} Kg</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <input type="hidden" name="selected_quantity" id="selected_quantity-{{ product.id }}" value="">
+                                        <button type="submit" class="btn btn-success mt-3 mb-5">Ajouter au panier</button>
+                                    </form>
+                                </div>
                             </div>
-                            <input type="hidden" name="selected_quantity" id="selected_quantity-{{ product.id }}" value="">
-                            <button type="submit" class="btn btn-success mt-3">Ajouter au panier</button>
-                        </form>
+                        {% endfor %}
+                        <div class="container-fluid my-5" id="no-products-message" style="display: none;">Aucun produit correspondant aux critères de filtrage.</div>
                     </div>
                 </div>
-            {% endfor %}
+            </div>
         </div>
     </div>
 
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Sélection du formulaire
+            var form = document.querySelector('form');
+
+            // Sélection des produits
+            var products = document.querySelectorAll('.col-md-2');
+
+            // Écoute de l'événement de soumission du formulaire
+            form.addEventListener('submit', function(event) {
+                // Empêcher le comportement par défaut du formulaire (rechargement de la page)
+                event.preventDefault();
+
+                // Récupération de la valeur du champ mots-clés
+                var keywords = document.getElementById('keywords').value.toLowerCase();
+
+                // Récupération des types de produits sélectionnés
+                var selectedTypes = [];
+                var checkboxes = document.querySelectorAll('input[type=checkbox]:checked');
+                checkboxes.forEach(function(checkbox) {
+                    selectedTypes.push(checkbox.id.toLowerCase());
+                });
+
+                // Parcourir tous les produits
+                products.forEach(function(product) {
+                    // Récupérer les mots-clés et types de produits du produit
+                    var productName = product.dataset.name.toLowerCase();
+                    var productCategory = product.dataset.category.toLowerCase();
+
+                    // Vérifier si le produit correspond aux critères de filtrage
+                    var keywordMatch = productName.includes(keywords);
+                    var typeMatch = selectedTypes.length === 0 || selectedTypes.includes(productCategory);
+
+                    // Afficher ou masquer le produit en fonction du filtrage
+                    if (keywordMatch && typeMatch) {
+                        product.style.display = 'block'; // Afficher le produit
+                    } else {
+                        product.style.display = 'none'; // Masquer le produit
+                    }
+                });
+
+                // Afficher ou masquer le message "Aucun produit correspondant aux critères de filtrage"
+                var noProductsMessage = document.getElementById('no-products-message');
+                var anyProductDisplayed = Array.from(products).some(function(product) {
+                    return product.style.display !== 'none';
+                });
+                noProductsMessage.style.display = anyProductDisplayed ? 'none' : 'block';
+            });
+        });
         document.addEventListener('DOMContentLoaded', function() {
-            // Cibler tous les formulaires d'ajout au panier
             const addToCartForms = document.querySelectorAll('form[id^="add-to-cart-form-"]');
 
-            // Boucler à travers chaque formulaire et ajouter un écouteur d'événements de changement à chaque champ de quantité
             addToCartForms.forEach(form => {
-                const productId = form.id.split('-').pop(); // Récupérer l'identifiant du produit
-                const quantityInput = document.getElementById(`quantity-${productId}`); // Champ de quantité
-                const selectedQuantityInput = document.getElementById(`selected_quantity-${productId}`); // Champ de quantité sélectionnée
+                const productId = form.querySelector('input[name="id"]').value; // Get the product ID
+                const quantityInput = document.getElementById(`quantity-${productId}`); // Quantity field
+                const selectedQuantityInput = document.getElementById(`selected_quantity-${productId}`); // Selected quantity field
 
                 quantityInput.addEventListener('change', function() {
-                    // Mettre à jour la valeur du champ de quantité sélectionnée
                     selectedQuantityInput.value = this.value;
                 });
             });
